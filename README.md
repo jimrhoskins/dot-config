@@ -8,3 +8,4 @@
 - nerdfonts
   - https://www.nerdfonts.com/font-downloads
   - Caskyadia
+- ripgrep
