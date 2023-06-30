@@ -1,4 +1,4 @@
-# .config
+# .config Setup
 
 # To install
 
