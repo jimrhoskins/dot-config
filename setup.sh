@@ -11,4 +11,4 @@ ln -s ../../nvim_user nvim/lua/user
 if [ -f ~/.zshrc ]; then
     mv ~/.zshrc ~/.zshrc.bak
 fi
-ln -s zshrc ~/.zshrc
+ln -s .config/_home/.zshrc ~/.zshrc
