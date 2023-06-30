@@ -4,3 +4,4 @@ iterm2
 !lazygit/config.yml
 lazygit
 *.bak
+tmux/plugins
