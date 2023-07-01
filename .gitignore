@@ -1,0 +1,6 @@
+configstore
+github-copilot
+iterm2
+!lazygit/config.yml
+lazygit
+*.bak
