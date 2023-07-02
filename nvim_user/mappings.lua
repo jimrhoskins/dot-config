@@ -36,8 +36,13 @@ return {
       desc = "Run all tests"
     },
 
-
-    -- Window Navigation
+    -- Github Copying
+    ["<leader>go"] = { name = "Github" },
+    ["<leader>gof"] = { ":GitBlameOpenFileURL<cr>", desc = "Open File on GH" },
+    ["<leader>goF"] = { ":GitBlameCopyFileURL<cr>", desc = "Copy File URL" },
+    ["<leader>goc"] = { ":GitBlameOpenCommitURL<cr>", desc = "Open Commit on GH" },
+    ["<leader>goC"] = { ":GitBlameCopyCommitURL<cr>", desc = "Copy Commit URL" },
+    ["<leader>gos"] = { ":GitBlameCopySHA<cr>", desc = "Copy SHA" },
   },
   t = {
     -- setting a mapping to false will disable it
