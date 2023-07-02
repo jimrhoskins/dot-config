@@ -1,4 +1,5 @@
 # If you come from bash you might have to change your $PATH.
+export XDG_CONFIG_HOME="$HOME/.config"
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
@@ -12,6 +13,11 @@ export ZSH="$HOME/.oh-my-zsh"
 #ZSH_THEME="agnoster"
 ZSH_THEME="mortalscumbag"
 export EDITOR=nvim
+
+# alias vim to nvim if exists
+if command -v nvim &>/dev/null; then
+  alias vim='nvim'
+fi
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -66,14 +72,14 @@ export EDITOR=nvim
 # HIST_STAMPS="mm/dd/yyyy"
 
 # Would you like to use another custom folder than $ZSH/custom?
-# ZSH_CUSTOM=/path/to/new-custom-folder
+ZSH_CUSTOM="$XDG_CONFIG_HOME/zsh_custom"
 
 # Which plugins would you like to load?
 # Standard plugins can be found in $ZSH/plugins/
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git)
+plugins=(git zsh-syntax-highlighting)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -121,7 +127,6 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-export XDG_CONFIG_HOME="$HOME/.config"
 
 alias qmk-tkc="qmk config user.keyboard=tkc/portico75"
 alias qmk-gmmk="qmk config user.keyboard=gmmk/pro/rev1/ansi"
