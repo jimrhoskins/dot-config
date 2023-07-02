@@ -1,6 +1,14 @@
 return {
   {
     "christoomey/vim-tmux-navigator",
+    cmd = {
+      "TmuxNavigateUp",
+      "TmuxNavigateDown",
+      "TmuxNavigateLeft",
+      "TmuxNavigateRight",
+      "TmuxNavigatePrevious",
+    },
+    -- commands
   }
   -- You can also add new plugins here as well:
   -- Add plugins, the lazy syntax

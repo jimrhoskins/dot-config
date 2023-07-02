@@ -41,6 +41,12 @@ return {
     ["<leader>goc"] = { ":GitBlameOpenCommitURL<cr>", desc = "Open Commit on GH" },
     ["<leader>goC"] = { ":GitBlameCopyCommitURL<cr>", desc = "Copy Commit URL" },
     ["<leader>gos"] = { ":GitBlameCopySHA<cr>", desc = "Copy SHA" },
+
+    -- Tmux navigation
+    ["<c-j>"] = { "<cmd>TmuxNavigateDown<cr>", noremap = true },
+    ["<c-k>"] = { "<cmd>TmuxNavigateUp<cr>" },
+    ["<c-h>"] = { "<cmd>TmuxNavigateLeft<cr>" },
+    ["<c-l>"] = { "<cmd>TmuxNavigateRight<cr>" },
   },
   t = {
     -- setting a mapping to false will disable it
