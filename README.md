@@ -9,3 +9,5 @@
   - https://www.nerdfonts.com/font-downloads
   - Caskyadia
 - ripgrep
+- go disk usage
+  - https://github.com/dundee/gdu
