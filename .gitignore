@@ -5,3 +5,4 @@ iterm2
 lazygit
 *.bak
 tmux/plugins
+helm

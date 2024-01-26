@@ -132,9 +132,17 @@ alias qmk-gmmk="qmk config user.keyboard=gmmk/pro/rev1/ansi"
 export ECR_REGISTRY=347759846863.dkr.ecr.us-west-2.amazonaws.com
 alias ecr-login="aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $ECR_REGISTRY"
 
-# bun completions
-[ -s "/Users/jhoskins/.bun/_bun" ] && source "/Users/jhoskins/.bun/_bun"
+export KUBECONFIG=$HOME/.kube/config
 
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
+kubetoken() {
+    echo $(kubectl -n kubernetes-dashboard create token admin-user)
+}
+
+kubedash() {
+    export POD_NAME=$(kubectl get pods -n kubernetes-dashboard -l "app.kubernetes.io/name=kubernetes-dashboard,app.kubernetes.io/instance=kubernetes-dashboard" -o jsonpath="{.items[0].metadata.name}")
+    export KUBETOKEN=$(kubetoken)
+    echo $KUBETOKEN | clip.exe
+    echo https://127.0.0.1:8443/
+    kubectl -n kubernetes-dashboard port-forward $POD_NAME 8443:8443
+}
+
