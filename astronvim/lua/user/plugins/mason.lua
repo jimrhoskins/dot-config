@@ -8,7 +8,7 @@ return {
       -- add more things to the ensure_installed table protecting against community packs modifying it
       opts.ensure_installed = require("astronvim.utils").list_insert_unique(opts.ensure_installed, {
         "bashls",
-        "eslint",
+        --     "eslint",
         "graphql",
         "jsonls",
         "lua_ls",
@@ -24,8 +24,8 @@ return {
     opts = function(_, opts)
       -- add more things to the ensure_installed table protecting against community packs modifying it
       opts.ensure_installed = require("astronvim.utils").list_insert_unique(opts.ensure_installed, {
-        "eslint_d",
-        "prettier",
+        --      "eslint_d",
+        --  "prettier",
         "prettierd",
       })
     end,

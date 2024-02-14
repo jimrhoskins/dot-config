@@ -123,10 +123,18 @@ docker-native() {
 
 alias k=kubectl
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
+export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
 
 alias qmk-tkc="qmk config user.keyboard=tkc/portico75"
 alias qmk-gmmk="qmk config user.keyboard=gmmk/pro/rev1/ansi"
+
+export ECR_REGISTRY=347759846863.dkr.ecr.us-west-2.amazonaws.com
+alias ecr-login="aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $ECR_REGISTRY"
+
+# bun completions
+[ -s "/Users/jhoskins/.bun/_bun" ] && source "/Users/jhoskins/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
