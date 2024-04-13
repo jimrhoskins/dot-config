@@ -9,9 +9,10 @@ return {
   event = 'VimEnter', -- Sets the loading event to 'VimEnter'
   config = function()
     require('neo-tree').setup {}
-
     local command = require 'neo-tree.command'
-    vim.keymap.set('n', '<leader>ft', ':NeoTreeRevealToggle<cr>', { desc = 'Filetre[e]' })
-    vim.keymap.set('n', '<leader>fT', ':NeoTreeFloatToggle<cr>', { desc = 'Filetre[e]' })
+    local keymap = vim.keymap
+
+    keymap.set('n', '<leader>ee', ':NeoTreeRevealToggle<cr>', { desc = 'Filetre[e]' })
+    keymap.set('n', '<leader>ef', ':NeoTreeFloatToggle<cr>', { desc = 'Filetre[e] [F]ocus' })
   end,
 }
