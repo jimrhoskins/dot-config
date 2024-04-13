@@ -11,4 +11,7 @@ return { -- Adds git related signs to the gutter, as well as utilities for manag
       untracked = { text = '┆' },
     },
   },
+  keys = {
+    { '<leader>tb', '<cmd>Gitsigns toggle_current_line_blame<CR>', 'n', desc = '[T]oggle current line [b]lame' },
+  },
 }
