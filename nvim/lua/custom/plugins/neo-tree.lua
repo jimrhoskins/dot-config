@@ -9,7 +9,6 @@ return {
   event = 'VimEnter', -- Sets the loading event to 'VimEnter'
   config = function()
     require('neo-tree').setup {}
-    local command = require 'neo-tree.command'
     local keymap = vim.keymap
 
     keymap.set('n', '<leader>ee', '<cmd>Neotree toggle left <cr>', { desc = 'Filetre[e]' })
