@@ -2,15 +2,11 @@ return {
 
   {
     'akinsho/toggleterm.nvim',
-    version = '*',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
-    opts = {--[[ things you want to change go here]]
-    },
     config = function()
       require('toggleterm').setup {}
       local Terminal = require('toggleterm.terminal').Terminal
-      local lazygit = Terminal:new {
-        cmd = 'lazygit',
+      local opts = {
         hidden = true,
         direction = 'float',
         float_opts = {
@@ -18,10 +14,17 @@ return {
         },
       }
 
-      local function lazygit_toggle()
-        lazygit:toggle()
+      local lazygit = Terminal:new(vim.tbl_extend('force', opts, { cmd = 'lazygit' }))
+      local k9s = Terminal:new(vim.tbl_extend('force', opts, { cmd = 'k9s' }))
+
+      local function toggle(term)
+        return function()
+          term:toggle()
+        end
       end
-      vim.keymap.set('n', '<leader>tg', lazygit_toggle, { desc = 'Lazy[G]it', silent = true })
+
+      vim.keymap.set('n', '<leader>tg', toggle(lazygit), { desc = 'Lazy[G]it', silent = true })
+      vim.keymap.set('n', '<leader>tk', toggle(k9s), { desc = '[K]9s', silent = true })
 
       -- vim.api.nvim_set_keymap('n', '<leader>g', '<cmd>lua _lazygit_toggle()<CR>', { noremap = true, silent = true })
     end,
