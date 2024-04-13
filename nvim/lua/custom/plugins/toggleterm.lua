@@ -24,12 +24,11 @@ return {
       end
 
       vim.keymap.set('n', '<leader>tg', toggle(lazygit), { desc = 'Lazy[G]it', silent = true })
+      vim.keymap.set('n', '<leader>gg', toggle(lazygit), { desc = 'Lazy[G]it', silent = true })
       vim.keymap.set('n', '<leader>tk', toggle(k9s), { desc = '[K]9s', silent = true })
 
       vim.api.nvim_create_user_command('Lazygit', toggle(lazygit), {})
       vim.api.nvim_create_user_command('K9s', toggle(k9s), {})
-
-      -- vim.api.nvim_set_keymap('n', '<leader>g', '<cmd>lua _lazygit_toggle()<CR>', { noremap = true, silent = true })
     end,
   },
 }
