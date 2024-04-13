@@ -8,3 +8,4 @@ tmux/plugins
 helm
 yarn
 argocd
+nvm
