@@ -6,3 +6,4 @@ lazygit
 *.bak
 tmux/plugins
 helm
+yarn

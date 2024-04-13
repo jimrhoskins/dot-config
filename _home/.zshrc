@@ -1,6 +1,6 @@
 # If you come from bash you might have to change your $PATH.
 export XDG_CONFIG_HOME="$HOME/.config"
-export PATH=$HOME/bin:/usr/local/bin:$PATH
+export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$HOME/.yarn/bin:$PATH
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -145,4 +145,5 @@ kubedash() {
     echo https://127.0.0.1:8443/
     kubectl -n kubernetes-dashboard port-forward $POD_NAME 8443:8443
 }
+
 
