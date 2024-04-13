@@ -1,0 +1,12 @@
+contexts:
+- name: 10.0.0.180
+  server: 10.0.0.180
+  user: 10.0.0.180
+current-context: 10.0.0.180
+servers:
+- grpc-web-root-path: ""
+  insecure: true
+  server: 10.0.0.180
+users:
+- auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhcmdvY2QiLCJzdWIiOiJhZG1pbjpsb2dpbiIsImV4cCI6MTcwODE0ODg0OCwibmJmIjoxNzA4MDYyNDQ4LCJpYXQiOjE3MDgwNjI0NDgsImp0aSI6IjdiNDMxMTBkLWJhMDYtNDc5My04YjY4LTYyYjYyZmRjOTU0MSJ9.3XEe3F_9vnl_5I9siJaBCxWBvZAFRxMFbVX5MKzWO2w
+  name: 10.0.0.180
