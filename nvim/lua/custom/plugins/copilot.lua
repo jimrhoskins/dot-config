@@ -14,8 +14,6 @@ return {
       },
       filetypes = {
         yaml = true,
-        hcl = true,
-        toml = true,
       },
     }
   end,

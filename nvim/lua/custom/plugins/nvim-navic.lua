@@ -1,3 +1,4 @@
+-- Prints the lexical location of the cursor in the winbar.
 return {
   'SmiteshP/nvim-navic',
   event = 'VimEnter',
