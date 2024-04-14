@@ -2,6 +2,9 @@ return { -- You can easily change to a different colorscheme.
   'folke/tokyonight.nvim',
   'rebelot/kanagawa.nvim',
   'kepano/flexoki-neovim',
+  'tanvirtin/monokai.nvim',
+  'Mofiqul/dracula.nvim',
+  { 'rose-pine/neovim', name = 'rose-pine' },
   {
     'catppuccin/nvim',
     name = 'catppuccin',

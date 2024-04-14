@@ -45,7 +45,11 @@ return { -- Fuzzy Finder (files, lsp, etc)
     end, { desc = '[F]ind by [G]rep All Files' })
     keymap.set('n', '<leader>fd', builtin.diagnostics, { desc = '[F]ind [D]iagnostics' })
     keymap.set('n', '<leader>fr', builtin.resume, { desc = '[F]ind [R]esume' })
-    keymap.set('n', '<leader>fc', builtin.colorscheme, { desc = '[F]ind [C]olorscheme' })
+
+    keymap.set('n', '<leader>fc', function()
+      builtin.colorscheme { enable_preview = true }
+    end, { desc = '[F]ind [C]olorscheme' })
+
     keymap.set('n', '<leader>f.', builtin.oldfiles, { desc = '[F]ind Recent Files ("." for repeat)' })
     keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
 
