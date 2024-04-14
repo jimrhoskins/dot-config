@@ -46,8 +46,40 @@ return { -- Fuzzy Finder (files, lsp, etc)
     keymap.set('n', '<leader>fd', builtin.diagnostics, { desc = '[F]ind [D]iagnostics' })
     keymap.set('n', '<leader>fr', builtin.resume, { desc = '[F]ind [R]esume' })
 
+    local ignored_schemes = {
+      'zellner',
+      'torte',
+      'slate',
+      'shine',
+      'ron',
+      'quiet',
+      'peachpuff',
+      'pablo',
+      'murphy',
+      'lunaperche',
+      'koehler',
+      'industry',
+      'morning',
+      'evening',
+      'elflord',
+      'desert',
+      'delek',
+      'default',
+      'darkblue',
+      'blue',
+    }
     keymap.set('n', '<leader>fc', function()
+      local target = vim.fn.getcompletion
+
+      ---@diagnostic disable-next-line: duplicate-set-field
+      vim.fn.getcompletion = function()
+        return vim.tbl_filter(function(color)
+          return not vim.tbl_contains(ignored_schemes, color)
+        end, target('', 'color'))
+      end
+
       builtin.colorscheme { enable_preview = true }
+      vim.fn.getcompletion = target
     end, { desc = '[F]ind [C]olorscheme' })
 
     keymap.set('n', '<leader>f.', builtin.oldfiles, { desc = '[F]ind Recent Files ("." for repeat)' })
