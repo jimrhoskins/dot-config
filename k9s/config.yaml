@@ -1,37 +1,65 @@
 k9s:
-  liveViewAutoRefresh: false
-  screenDumpDir: /home/jhoskins/.local/state/k9s/screen-dumps
   refreshRate: 2
   maxConnRetry: 5
+  enableMouse: true
+  headless: false
+  logoless: false
+  crumbsless: false
   readOnly: false
   noExitOnCtrlC: false
-  ui:
-    enableMouse: false
-    headless: false
-    logoless: false
-    crumbsless: false
-    reactive: false
-    noIcons: false
-    defaultsToFullScreen: false
+  noIcons: false
   skipLatestRevCheck: false
-  disablePodCounting: false
-  shellPod:
-    image: busybox:1.35.0
-    namespace: default
-    limits:
-      cpu: 100m
-      memory: 100Mi
-  imageScans:
-    enable: false
-    exclusions:
-      namespaces: []
-      labels: {}
   logger:
     tail: 100
     buffer: 5000
-    sinceSeconds: -1
+    sinceSeconds: 300
+    fullScreenLogs: false
     textWrap: false
     showTime: false
+  currentContext: kojo-preview
+  currentCluster: kojo-preview
+  clusters:
+    eks-silver:
+      namespace:
+        active: all
+        lockFavorites: false
+        favorites:
+        - default
+      view:
+        active: pod
+      featureGates:
+        nodeShell: false
+      shellPod:
+        image: busybox:1.35.0
+        command: []
+        args: []
+        namespace: default
+        limits:
+          cpu: 100m
+          memory: 100Mi
+        labels: {}
+      portForwardAddress: localhost
+    kojo-preview:
+      namespace:
+        active: all
+        lockFavorites: false
+        favorites:
+        - all
+        - default
+      view:
+        active: replicasets
+      featureGates:
+        nodeShell: false
+      shellPod:
+        image: busybox:1.35.0
+        command: []
+        args: []
+        namespace: default
+        limits:
+          cpu: 100m
+          memory: 100Mi
+        labels: {}
+      portForwardAddress: localhost
   thresholds:
     cpu:
       critical: 90
@@ -39,3 +67,4 @@ k9s:
     memory:
       critical: 90
       warn: 70
+  screenDumpDir: /var/folders/6_/znjjfygs75nfdwfjcx9vq94m0000gn/T/k9s-screens-jhoskins
