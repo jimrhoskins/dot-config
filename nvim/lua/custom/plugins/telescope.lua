@@ -41,7 +41,14 @@ return { -- Fuzzy Finder (files, lsp, etc)
     keymap.set('n', '<leader>fw', builtin.grep_string, { desc = '[F]ind current [W]ord' })
     keymap.set('n', '<leader>fg', builtin.live_grep, { desc = '[F]ind by [G]rep' })
     keymap.set('n', '<leader>fG', function()
-      builtin.live_grep { hidden = true, no_ignore = true }
+      builtin.live_grep {
+        additional_args = function(args)
+          return vim.list_extend(args, {
+            '--hidden',
+            --            '--no-ignore',
+          })
+        end,
+      }
     end, { desc = '[F]ind by [G]rep All Files' })
     keymap.set('n', '<leader>fd', builtin.diagnostics, { desc = '[F]ind [D]iagnostics' })
     keymap.set('n', '<leader>fr', builtin.resume, { desc = '[F]ind [R]esume' })
