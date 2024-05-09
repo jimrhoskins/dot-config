@@ -5,6 +5,7 @@ return { -- LSP Configuration & Plugins
     'williamboman/mason.nvim',
     'williamboman/mason-lspconfig.nvim',
     'WhoIsSethDaniel/mason-tool-installer.nvim',
+    'towolf/vim-helm',
 
     -- Useful status updates for LSP.
     { 'j-hui/fidget.nvim', opts = {} },
