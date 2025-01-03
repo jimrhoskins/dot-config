@@ -1,0 +1,7 @@
+font-family = Monaco
+font-size =  16
+theme = catppuccin-mocha
+quick-terminal-position = right
+macos-titlebar-style = hidden
+
+keybind = global:ctrl+grave_accent=toggle_quick_terminal

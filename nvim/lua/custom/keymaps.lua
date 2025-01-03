@@ -10,3 +10,15 @@ local function toggle_wrap()
 end
 
 keymap.set('n', '<leader>tw', toggle_wrap, { silent = true, noremap = true, expr = false, nowait = false, desc = 'Toggle wrap' })
+vim.g['diagnostics_active'] = true
+function Toggle_diagnostics()
+  if vim.g.diagnostics_active then
+    vim.g.diagnostics_active = false
+    vim.diagnostic.disable()
+  else
+    vim.g.diagnostics_active = true
+    vim.diagnostic.enable()
+  end
+end
+
+vim.keymap.set('n', '<leader>td', Toggle_diagnostics, { noremap = true, silent = true, desc = 'Toggle vim diagnostics' })
