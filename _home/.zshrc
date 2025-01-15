@@ -146,5 +146,21 @@ kubedash() {
     kubectl -n kubernetes-dashboard port-forward $POD_NAME 8443:8443
 }
 
+function y() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+	yazi "$@" --cwd-file="$tmp"
+	if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+		builtin cd -- "$cwd"
+	fi
+	rm -f -- "$tmp"
+}
 
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+export PATH="/opt/homebrew/lib/ruby/gems/3.3.0/bin:/opt/homebrew/opt/ruby/bin:$PATH"
+
+export DOJO_HOME=$HOME/dojo
+source $DOJO_HOME/dojo/scripts/dojo-rc.sh
+. "$HOME/.cargo/env"
+
+eval "$(zoxide init zsh)"
+
