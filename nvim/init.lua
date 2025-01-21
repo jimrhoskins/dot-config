@@ -35,6 +35,9 @@ if vim.fn.has 'wsl' == 1 then
   })
 end
 
+-- Allow openingh.nvim to copy to register
+vim.g.openingh_copy_to_register = true
+
 -- Enable break indent
 vim.opt.breakindent = true
 
