@@ -11,6 +11,7 @@ return {
     {
       'rcarriga/nvim-notify',
       config = function()
+        ---@diagnostic disable-next-line: missing-fields
         require('notify').setup {
           background_colour = '#000000',
         }
@@ -35,4 +36,13 @@ return {
       lsp_doc_border = false, -- add a border to hover docs and signature help
     },
   },
+  config = function(_, opts)
+    require('noice').setup(opts)
+
+    local keymap = vim.keymap
+    keymap.set('n', '<leader>nn', '<cmd>Noice<cr>', { desc = 'Noice' })
+    keymap.set('n', '<leader>na', '<cmd>Noice all<cr>', { desc = 'Noice All' })
+    keymap.set('n', '<leader>nl', '<cmd>Noice last<cr>', { desc = 'Noice Last' })
+    keymap.set('n', '<leader>fm', '<cmd>Noice telescope<cr>', { desc = '[F]ind [M]essages' })
+  end,
 }
