@@ -12,7 +12,13 @@ return { -- Useful plugin to show you pending keybinds.
       { '<leader>s', group = '[S]earch' },
       { '<leader>w', group = '[W]orkspace' },
       { '<leader>t', group = '[T]oggle' },
-      { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+      { '<leader>f', group = '[F]ile' },
+      { '<leader>e', group = '[E]rrors' },
+      { '<leader>l', group = '[L]ua' },
+      { '<leader>g', group = '[G]it' },
+      { '<leader>m', group = '[M]onkeytype' },
+      { '<leader>n', group = '[N]oice' },
+      { '<leader>S', group = '[S]ession' },
     } -- Document existing key chains
   end,
 }
