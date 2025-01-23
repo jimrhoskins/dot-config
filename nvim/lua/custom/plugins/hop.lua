@@ -33,5 +33,6 @@ return {
     vim.keymap.set('n', '<leader>ha', '<cmd>HopLine<cr>', { desc = 'Hop to anywhere' })
     vim.keymap.set('n', '<leader>hv', '<cmd>HopPasteChar1<cr>', { desc = 'Paste at character' })
     vim.keymap.set('n', '<leader>hy', '<cmd>HopYankChar1<cr>', { desc = 'Yank at character' })
+    vim.keymap.set('n', '<leader>hn', '<cmd>HopNodes<cr>', { desc = 'Hop to node' })
   end,
 }

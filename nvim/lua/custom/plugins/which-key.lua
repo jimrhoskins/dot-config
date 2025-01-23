@@ -12,7 +12,7 @@ return { -- Useful plugin to show you pending keybinds.
       { '<leader>s', group = '[S]earch' },
       { '<leader>w', group = '[W]orkspace' },
       { '<leader>t', group = '[T]oggle' },
-      { '<leader>f', group = '[F]ile' },
+      { '<leader>f', group = '[F]ind' },
       { '<leader>e', group = '[E]rrors' },
       { '<leader>l', group = '[L]ua' },
       { '<leader>g', group = '[G]it' },
