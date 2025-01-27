@@ -4,6 +4,7 @@ iterm2
 !lazygit/config.yml
 lazygit
 *.bak
+*.netrwhist
 tmux/plugins
 helm
 yarn
