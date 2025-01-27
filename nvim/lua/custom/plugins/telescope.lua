@@ -37,6 +37,7 @@ return { -- Fuzzy Finder (files, lsp, etc)
     keymap.set('n', '<leader>fF', function()
       builtin.find_files { hidden = true, no_ignore = true }
     end, { desc = '[F]ind All [F]iles' })
+    keymap.set('n', '<leader>fj', builtin.git_files, { desc = '[F]ind [F]iles' })
     keymap.set('n', '<leader>fb', builtin.builtin, { desc = '[F]ind [B]uiltin' })
     keymap.set('n', '<leader>fw', builtin.grep_string, { desc = '[F]ind current [W]ord' })
     keymap.set('n', '<leader>fg', builtin.live_grep, { desc = '[F]ind by [G]rep' })
