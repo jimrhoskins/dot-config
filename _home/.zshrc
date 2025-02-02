@@ -1,6 +1,7 @@
 # If you come from bash you might have to change your $PATH.
 export XDG_CONFIG_HOME="$HOME/.config"
 export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$HOME/.yarn/bin:$PATH
+export PATH=/opt/nvim-linux64/bin:$PATH
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -159,8 +160,8 @@ function y() {
 export PATH="/opt/homebrew/lib/ruby/gems/3.3.0/bin:/opt/homebrew/opt/ruby/bin:$PATH"
 
 export DOJO_HOME=$HOME/dojo
-source $DOJO_HOME/dojo/scripts/dojo-rc.sh
-. "$HOME/.cargo/env"
+[ -f "$DOJO_HOME/dojo/scripts/dojo-rc.sh" ] && source "$DOJO_HOME/dojo/scripts/dojo-rc.sh"
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
-eval "$(zoxide init zsh)"
+command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
 

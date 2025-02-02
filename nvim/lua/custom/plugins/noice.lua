@@ -44,5 +44,6 @@ return {
     keymap.set('n', '<leader>na', '<cmd>Noice all<cr>', { desc = 'Noice All' })
     keymap.set('n', '<leader>nl', '<cmd>Noice last<cr>', { desc = 'Noice Last' })
     keymap.set('n', '<leader>fm', '<cmd>Noice telescope<cr>', { desc = '[F]ind [M]essages' })
+    keymap.set('n', '<esc>', '<cmd>Noice dismiss<cr>', { desc = 'Dismiss messages' })
   end,
 }
