@@ -5,8 +5,8 @@ keymap.set('i', 'jj', '<Esc>', { silent = true, noremap = true, expr = false, no
 keymap.set('i', 'kk', '<Esc>', { silent = true, noremap = true, expr = false, nowait = false, desc = 'jk to escape' })
 keymap.set('n', '<leader>fs', '<cmd>w<CR>', { silent = true, noremap = true, expr = false, nowait = false, desc = 'Save file' })
 
-keymap.set('v', 'J', ":m '>+1<CR>gv=gv")
-keymap.set('v', 'K', ":m '<-2<CR>gv=gv")
+keymap.set('v', 'J', ":m '>+1<CR>gv=gv", { silent = true, desc = 'Move line down' })
+keymap.set('v', 'K', ":m '<-2<CR>gv=gv", { silent = true, desc = 'Move line up' })
 
 keymap.set('n', '<leader>lX', '<cmd>source %<CR>')
 keymap.set('n', '<leader>lx', ':.lua<CR>')
