@@ -27,6 +27,7 @@ return {
       { '<leader>h', group = '[H]op' },
     }
     vim.keymap.set('n', '<leader>hc', '<cmd>HopChar1<cr>', { desc = 'Hop 1 character' })
+    vim.keymap.set('n', 'gh', '<cmd>HopChar1<cr>', { desc = 'Hop 1 character' })
     vim.keymap.set('n', '<leader>hw', '<cmd>HopWord<cr>', { desc = 'Hop to word' })
     vim.keymap.set('n', '<leader>hp', '<cmd>HopPattern<cr>', { desc = 'Hop to pattern' })
     vim.keymap.set('n', '<leader>hl', '<cmd>HopLine<cr>', { desc = 'Hop to line' })
