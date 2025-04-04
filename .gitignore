@@ -19,3 +19,6 @@ gh/hosts.yml
 gh/config.yml
 act
 wslu/*
+uv/*
+posting/*
+posting
