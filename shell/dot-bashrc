@@ -9,3 +9,15 @@ source ~/.local/share/omarchy/default/bash/rc
 
 eval "$(ssh-agent -s)" >/dev/null
 alias sshh='ssh-add -q ~/.ssh/id_ed25519'
+
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/bash/rc.d"
+
+if [ -d "$CONFIG_DIR" ]; then
+  for file in "$CONFIG_DIR"/*.sh "$CONFIG_DIR"/*.bash; do
+    # Skip if no files match the pattern
+    [ -e "$file" ] || continue
+    # Only source readable regular files
+    [ -r "$file" ] && [ -f "$file" ] && . "$file"
+  done
+fi
+

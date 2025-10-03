@@ -1,0 +1,1 @@
+# Omarchy bash config
