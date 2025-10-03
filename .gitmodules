@@ -1,9 +1,0 @@
-[submodule "nvim"]
-	path = nvim
-	url = https://github.com/AstroNvim/AstroNvim
-[submodule "tpm"]
-	path = tpm
-	url = https://github.com/tmux-plugins/tpm
-[submodule "zsh_custom/plugins/zsh-syntax-highlighting"]
-	path = zsh_custom/plugins/zsh-syntax-highlighting
-	url = https://github.com/zsh-users/zsh-syntax-highlighting.git
