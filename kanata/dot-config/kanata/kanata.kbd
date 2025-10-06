@@ -1,13 +1,23 @@
 (defcfg
   process-unmapped-keys yes
+  linux-dev /dev/input/event2
+  concurrent-tap-hold yes
 )
+
+(defchordsv2
+  (j k) esc     200 all-released (nomods)
+  (c v) tab     200 all-released (nomods)
+)
+
 
 (defvar
   ;; Note: consider using different time values for your different fingers.
   ;; For example, your pinkies might be slower to release keys and index
   ;; fingers faster.
   tap-time 200
-  hold-time 150
+  hold-time 200
+  slow-tap-time 300
+  slow-hold-time 300
 
   left-hand-keys (
     q w e r t
@@ -30,7 +40,7 @@
 )
 
 
-;; (deflayer qwerty
+;; (deflayer name
 ;;   grv  1    2    3    4    5    6    7    8    9    0    -    =    bspc
 ;;   tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
 ;;   caps a    s    d    f    g    h    j    k    l    ;    '    ret
@@ -61,17 +71,18 @@
 
 (defalias
   tap (multi
-      (layer-switch nomods)
-      (on-idle-fakekey to-base tap 20)
-    )
-  a (tap-hold-release-keys $tap-time $hold-time (multi a @tap) lmet $left-hand-keys)
-  s (tap-hold-release-keys $tap-time $hold-time (multi s @tap) lctl $left-hand-keys)
+    (layer-switch nomods)
+    (on-idle-fakekey to-base tap 20)
+  )
+  a (tap-hold-release-keys $slow-tap-time $slow-hold-time (multi a @tap) lmet $left-hand-keys)
+  s (tap-hold-release-keys $slow-tap-time $slow-hold-time (multi s @tap) lctl $left-hand-keys)
   d (tap-hold-release-keys $tap-time $hold-time (multi d @tap) lalt $left-hand-keys)
   f (tap-hold-release-keys $tap-time $hold-time (multi f @tap) lsft $left-hand-keys)
+
   j (tap-hold-release-keys $tap-time $hold-time (multi j @tap) rsft $right-hand-keys)
   k (tap-hold-release-keys $tap-time $hold-time (multi k @tap) lalt $right-hand-keys)
-  l (tap-hold-release-keys $tap-time $hold-time (multi l @tap) rctl $right-hand-keys)
-  ; (tap-hold-release-keys $tap-time $hold-time (multi ; @tap) lmet $right-hand-keys)
+  l (tap-hold-release-keys $slow-tap-time $slow-hold-time (multi l @tap) rctl $right-hand-keys)
+  ; (tap-hold-release-keys $slow-tap-time $slow-hold-time (multi ; @tap) lmet $right-hand-keys)
 )
 
 
