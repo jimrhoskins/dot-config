@@ -7,6 +7,7 @@
 (defchordsv2
   (j k) esc     200 all-released (nomods)
   (c v) tab     200 all-released (nomods)
+  (f j) @cw     200 all-released (nomods)
 )
 
 
@@ -83,6 +84,8 @@
   k (tap-hold-release-keys $tap-time $hold-time (multi k @tap) lalt $right-hand-keys)
   l (tap-hold-release-keys $slow-tap-time $slow-hold-time (multi l @tap) rctl $right-hand-keys)
   ; (tap-hold-release-keys $slow-tap-time $slow-hold-time (multi ; @tap) lmet $right-hand-keys)
+
+  cw (caps-word 2000)
 )
 
 
