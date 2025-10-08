@@ -55,7 +55,7 @@
   tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
   caps @a   @s   @d   @f   g    h    @j   @k   @l   @;    '    ret
   lsft z    x    c    v    b    n    m    ,    .    /    rsft
-  a lmet lalt           spc            ralt rctl
+  lctl lalt lmet           spc            ralt rctl
 )
 
 (deflayer nomods
@@ -63,7 +63,7 @@
   tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
   caps a    s    d    f    g    h    j    k    l    ;    '    ret
   lsft z    x    c    v    b    n    m    ,    .    /    rsft
-  a lmet lalt           spc            ralt rctl
+  lctl lalt lmet           spc            ralt rctl
 )
 
 (deffakekeys
@@ -75,15 +75,15 @@
     (layer-switch nomods)
     (on-idle-fakekey to-base tap 20)
   )
-  a (tap-hold-release-keys $slow-tap-time $slow-hold-time (multi a @tap) lmet $left-hand-keys)
+  a (tap-hold-release-keys $slow-tap-time $slow-hold-time (multi a @tap) lalt $left-hand-keys)
   s (tap-hold-release-keys $slow-tap-time $slow-hold-time (multi s @tap) lctl $left-hand-keys)
-  d (tap-hold-release-keys $tap-time $hold-time (multi d @tap) lalt $left-hand-keys)
+  d (tap-hold-release-keys $tap-time $hold-time (multi d @tap) lmet $left-hand-keys)
   f (tap-hold-release-keys $tap-time $hold-time (multi f @tap) lsft $left-hand-keys)
 
   j (tap-hold-release-keys $tap-time $hold-time (multi j @tap) rsft $right-hand-keys)
-  k (tap-hold-release-keys $tap-time $hold-time (multi k @tap) lalt $right-hand-keys)
+  k (tap-hold-release-keys $tap-time $hold-time (multi k @tap) lmet $right-hand-keys)
   l (tap-hold-release-keys $slow-tap-time $slow-hold-time (multi l @tap) rctl $right-hand-keys)
-  ; (tap-hold-release-keys $slow-tap-time $slow-hold-time (multi ; @tap) lmet $right-hand-keys)
+  ; (tap-hold-release-keys $slow-tap-time $slow-hold-time (multi ; @tap) lalt $right-hand-keys)
 
   cw (caps-word 2000)
 )
