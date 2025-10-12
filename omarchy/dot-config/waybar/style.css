@@ -24,7 +24,7 @@
   padding: 0 6px;
   margin: 0 1.5px;
   min-width: 9px;
-  opacity: 0.3;
+  /* opacity: 0.3; */
 }
 
 #workspaces button.active {
@@ -33,7 +33,7 @@
 }
 
 #workspaces button.empty {
-  opacity: 0.5;
+  /* opacity: 0.5; */
 }
 
 #tray,

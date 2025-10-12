@@ -16,7 +16,7 @@
   ],
   "hyprland/workspaces": {
     "on-click": "activate",
-    "format": "{icon}",
+    "format": "{name} {icon} ",
     "format-window-separator": " ",
     "window-rewrite-default": "",
     "window-rewrite": {
@@ -30,16 +30,18 @@
       "icon-size": 16
     },
     "format-icons": {
-      "default": "",
-      "1": "1",
-      "2": "2",
-      "3": "3",
-      "4": "4",
-      "5": "5",
-      "6": "6",
-      "7": "7",
-      "8": "8",
-      "9": "9",
+      "active": "",
+      "default": ""
+      // "default": "",
+      // "1": "1",
+      // "2": "2",
+      // "3": "3",
+      // "4": "4",
+      // "5": "5",
+      // "6": "6",
+      // "7": "7",
+      // "8": "8",
+      // "9": "9",
       // "active": "󱓻"
     },
     // "persistent-workspaces": {
@@ -73,7 +75,8 @@
   "clock": {
     "format": "{:L%d %A %H:%M}",
     "format-alt": "{:L%d %B W%V %Y}",
-    "tooltip": false,
+    // "tooltip": false,
+    "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
     "on-click-right": "omarchy-cmd-tzupdate"
   },
   "network": {
@@ -116,7 +119,7 @@
     "on-click": "blueberry"
   },
   "pulseaudio": {
-    "format": "{icon}",
+    "format": "{icon} {volume}%",
     "on-click": "$TERMINAL --class=Wiremix -e wiremix",
     "on-click-right": "pamixer -t",
     "tooltip-format": "Playing at {volume}%",
