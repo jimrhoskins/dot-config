@@ -1,0 +1,28 @@
+# Name: Akane (Ghostty)
+
+
+# Core
+background = #0E1E36
+foreground = #F4B999
+cursor-color = #F4B999
+selection-background = #9279AA
+# selection-foreground = #0E1E36  # <- optional; if set, put on its own line with no trailing comment
+
+# 16-color palette
+palette = 0=#0E1E36
+palette = 1=#D2495B
+palette = 2=#BE6F76
+palette = 3=#F4B999
+palette = 4=#574F72
+palette = 5=#763C5D
+palette = 6=#9279AA
+palette = 7=#FA7E75
+palette = 8=#4A2036
+palette = 9=#FA7E75
+palette = 10=#C85670
+palette = 11=#F4B999
+palette = 12=#9279AA
+palette = 13=#BE6F76
+palette = 14=#C85670
+palette = 15=#F4B999
+
