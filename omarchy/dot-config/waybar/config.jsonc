@@ -93,6 +93,10 @@
     "on-click": "omarchy-launch-wifi"
   },
   "battery": {
+    "states": {
+      "warning": 98,
+      "critical": 95
+    },
     "format": "{capacity}% {icon}",
     "format-discharging": "{icon} {capacity}%",
     "format-charging": "{icon}",
@@ -106,10 +110,6 @@
     "tooltip-format-charging": "{power:>1.0f}W↑ {capacity}%",
     "interval": 5,
     "on-click": "omarchy-menu power",
-    "states": {
-      "warning": 20,
-      "critical": 10
-    }
   },
   "bluetooth": {
     "format": "",

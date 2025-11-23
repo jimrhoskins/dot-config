@@ -7,8 +7,8 @@
   border: none;
   border-radius: 0;
   min-height: 0;
-  font-family: 'CaskaydiaMono Nerd Font Mono';
-  font-size: 18px;
+  font-family: 'CaskaydiaMono Nerd Font';
+  font-size: 12px;
 }
 
 .modules-left {
@@ -24,23 +24,14 @@
   padding: 0 6px;
   margin: 0 1.5px;
   min-width: 9px;
-  /* opacity: 0.3; */
-}
-
-#workspaces button.active {
-  opacity: 1;
-  font-weight: bold;
 }
 
 #workspaces button.empty {
-  /* opacity: 0.5; */
+  opacity: 0.5;
 }
 
-#tray,
 #cpu,
 #battery,
-#network,
-#bluetooth,
 #pulseaudio,
 #custom-omarchy,
 #custom-screenrecording-indicator,
@@ -49,8 +40,20 @@
   margin: 0 7.5px;
 }
 
+#tray {
+  margin-right: 16px;
+}
+
+#bluetooth {
+  margin-right: 17px;
+}
+
+#network {
+  margin-right: 13px;
+}
+
 #custom-expand-icon {
-  margin-right: 7px;
+  margin-right: 20px;
 }
 
 tooltip {
@@ -78,3 +81,15 @@ tooltip {
 #custom-screenrecording-indicator.active {
   color: #a55555;
 }
+
+#battery.warning {
+  color: #d7af5f;
+}
+
+.critical {
+  color: #d75f5f;
+}
+
+/* #battery { */
+/*   color: #5f875f; */
+/* } */
