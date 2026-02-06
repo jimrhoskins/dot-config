@@ -12,6 +12,10 @@ keymap.set('n', '<leader>lX', '<cmd>source %<CR>')
 keymap.set('n', '<leader>lx', ':.lua<CR>')
 keymap.set('v', '<leader>lx', ':lua<CR>')
 
+keymap.set('n', '<leader>dc', '<cmd>DiffviewClose<CR>')
+keymap.set('n', '<leader>dw', '<cmd>DiffviewOpen<CR>')
+keymap.set('n', '<leader>db', '<cmd>DiffviewOpen origin/develop...HEAD<CR>')
+
 local function toggle_wrap()
   vim.wo.wrap = not vim.wo.wrap
 end

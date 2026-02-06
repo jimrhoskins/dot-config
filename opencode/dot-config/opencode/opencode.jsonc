@@ -11,16 +11,6 @@
         "https://mcp.linear.app/mcp"
       ]
     },
-    "obsidian": {
-      "enabled": true,
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "@mauricio.wolff/mcp-obsidian@latest",
-        "/Users/jimhoskins/Documents/higharc"
-      ]
-    }
   },
   "keybinds": {
     "leader": "ctrl+x",
@@ -59,7 +49,6 @@
     "agent_cycle": "tab",
     "agent_cycle_reverse": "shift+tab",
     "input_clear": "ctrl+c",
-    "input_forward_delete": "ctrl+d",
     "input_paste": "ctrl+v",
     "input_submit": "enter",
     "input_newline": "shift+enter",
