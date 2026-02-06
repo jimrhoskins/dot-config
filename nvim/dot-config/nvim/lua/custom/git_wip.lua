@@ -39,7 +39,7 @@ end
 
 local function next_wip_number()
   local base = last_real_commit()
-  local args = { 'log', '--format=%s', '--grep=^wip:' }
+  local args = { 'log', '--first-parent', '--format=%s', '--grep=^wip:' }
   if base then
     table.insert(args, 3, base .. '..HEAD')
   end
@@ -110,5 +110,15 @@ end
 vim.keymap.set('n', '<leader>gw', M.wip_commit, { desc = 'Git WIP commit' })
 vim.keymap.set('n', '<leader>gF', M.wip_finalize, { desc = 'Git WIP finalize' })
 vim.keymap.set('n', '<leader>gD', M.wip_diff, { desc = 'Git WIP diff' })
+
+vim.api.nvim_create_user_command('WipFinalize', M.wip_finalize, { desc = 'Finalize wip commits' })
+
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'NeogitStatus',
+  callback = function()
+    vim.keymap.set('n', 'F', M.wip_finalize, { buffer = true, desc = 'Finalize wip commits' })
+    vim.keymap.set('n', 'W', M.wip_commit, { buffer = true, desc = 'Wip commit' })
+  end,
+})
 
 return M
