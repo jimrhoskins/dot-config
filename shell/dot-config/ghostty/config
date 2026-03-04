@@ -1,5 +1,8 @@
-# Dynamic theme colors
-config-file = ?"~/.config/omarchy/current/theme/ghostty.conf"
+font-family = "CaskaydiaCove NFM Regular"
+font-size =  18
+theme = catppuccin-mocha
+quick-terminal-position = right
+macos-titlebar-style = hidden
 
 # Font
 font-family = "CaskaydiaMono Nerd Font Mono"

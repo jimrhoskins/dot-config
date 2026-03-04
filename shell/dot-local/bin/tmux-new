@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+session_name=""
+creating_session=0
+
+cleanup_on_error() {
+  if [ "$creating_session" -eq 1 ] && [ -n "$session_name" ]; then
+    tmux kill-session -t "$session_name" 2>/dev/null || true
+    printf 'Failed to build tmux layout. Removed partial session: %s\n' "$session_name" >&2
+  fi
+}
+
+trap cleanup_on_error ERR
+
+usage() {
+  printf 'Usage: %s <path-or-name>\n' "${0##*/}" >&2
+}
+
+if [ "$#" -lt 1 ]; then
+  usage
+  exit 1
+fi
+
+target="$1"
+resolved=""
+
+if [ -d "$target" ]; then
+  resolved="$(cd "$target" && pwd)"
+elif [ -d "$HOME/dev/product-worktrees/$target" ]; then
+  resolved="$HOME/dev/product-worktrees/$target"
+elif [ -d "$HOME/dev/$target" ]; then
+  resolved="$HOME/dev/$target"
+fi
+
+if [ -z "$resolved" ]; then
+  printf 'Could not find directory for: %s\n' "$target" >&2
+  printf 'Checked:\n' >&2
+  printf '  %s\n' "$target" >&2
+  printf '  %s\n' "$HOME/dev/product-worktrees/$target" >&2
+  printf '  %s\n' "$HOME/dev/$target" >&2
+  exit 1
+fi
+
+session_name="$(basename "$resolved")"
+
+if tmux has-session -t "$session_name" 2>/dev/null; then
+  if [ -n "${TMUX:-}" ]; then
+    tmux switch-client -t "$session_name"
+  else
+    tmux attach-session -t "$session_name"
+  fi
+  exit 0
+fi
+
+creating_session=1
+
+tmux new-session -d -s "$session_name" -n code -c "$resolved"
+tmux send-keys -t "$session_name:code" 'nvim' C-m
+tmux split-window -h -t "$session_name:code" -c "$resolved"
+tmux send-keys -t "$session_name:code" 'oc' C-m
+
+tmux new-window -t "$session_name" -n servers -c "$resolved"
+tmux split-window -h -t "$session_name:servers" -c "$resolved"
+
+tmux new-window -t "$session_name" -n diff -c "$resolved"
+tmux send-keys -t "$session_name:diff" 'nvim "+autocmd VimEnter * ++once DiffviewOpen"' C-m
+
+tmux new-window -t "$session_name" -n term -c "$resolved"
+
+tmux select-window -t "$session_name:code"
+
+creating_session=0
+
+if [ -n "${TMUX:-}" ]; then
+  tmux switch-client -t "$session_name"
+else
+  tmux attach-session -t "$session_name"
+fi
