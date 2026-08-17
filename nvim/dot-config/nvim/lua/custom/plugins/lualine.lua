@@ -9,6 +9,28 @@ return {
     local lualine = require 'lualine'
     local lazy_status = require 'lazy.status' -- to configure lazy pending updates count
 
+    local function is_diffview_window()
+      local ok, lib = pcall(require, 'diffview.lib')
+      if ok and lib and type(lib.get_current_view) == 'function' then
+        local view = lib.get_current_view()
+        if view and view.tabpage == vim.api.nvim_get_current_tabpage() then
+          return true
+        end
+      end
+
+      local ft = vim.bo.filetype
+      if ft == 'DiffviewFiles' or ft == 'DiffviewFileHistory' then
+        return true
+      end
+
+      if vim.wo.diff then
+        return true
+      end
+
+      local name = vim.api.nvim_buf_get_name(0)
+      return name:match('^diffview://') ~= nil
+    end
+
     require('nvim-navic').setup {
       lsp = {
         auto_attach = true,
@@ -19,15 +41,26 @@ return {
 
     -- configure lualine with modified theme
     lualine.setup {
-      -- options = {
-      --   theme = my_lualine_theme,
-      -- },
+      options = {
+        disabled_filetypes = {
+          winbar = { 'DiffviewFiles', 'DiffviewFileHistory' },
+        },
+      },
       winbar = {
         lualine_c = {
-          { 'navic', separator = '' },
+          {
+            'navic',
+            separator = '',
+            cond = function()
+              return not is_diffview_window()
+            end,
+          },
           {
             function()
               return ' '
+            end,
+            cond = function()
+              return not is_diffview_window()
             end,
           },
         },

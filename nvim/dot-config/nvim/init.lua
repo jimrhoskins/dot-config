@@ -159,6 +159,13 @@ vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
   border = 'rounded',
 })
 
+-- Compatibility shim for plugins still calling deprecated API on Neovim 0.11+
+if vim.lsp.get_clients then
+  vim.lsp.get_active_clients = function(filter)
+    return vim.lsp.get_clients(filter)
+  end
+end
+
 require 'custom.keymaps'
 require 'custom.git_wip'
 

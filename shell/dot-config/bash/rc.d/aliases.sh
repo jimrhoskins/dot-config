@@ -13,5 +13,4 @@ alias pac-remove='omarchy-pkg-remove'
 
 alias ngit='nvim +Neogit'
 
-alias oc='opencode --port'
 alias te='tmux-new'
