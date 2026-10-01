@@ -1,0 +1,5 @@
+# Use the usual metadata exclusions plus package documentation.
+(^|/)\.git(/|$)
+(^|/)\.gitignore$
+(^|/)\.stow-local-ignore$
+^/README\.md$

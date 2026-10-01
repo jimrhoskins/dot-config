@@ -90,6 +90,12 @@ plugins=(git zsh-syntax-highlighting)
 
 source $ZSH/oh-my-zsh.sh
 
+# Override oh-my-zsh's git-status alias with the Neogit entry point.
+unalias gs 2>/dev/null || true
+function gs() {
+  command nvim +Neogit "$@"
+}
+
 # User configuration
 
 findandkill() {

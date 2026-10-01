@@ -12,5 +12,6 @@ alias pac-add='omarchy-pkg-install'
 alias pac-remove='omarchy-pkg-remove'
 
 alias ngit='nvim +Neogit'
+alias gs='nvim +Neogit'
 
 alias te='tmux-new'

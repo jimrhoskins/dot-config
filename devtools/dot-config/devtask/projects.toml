@@ -1,0 +1,74 @@
+# Personal project locations and task defaults. Edit this source under ~/stow.
+# Paths are relative to root; no active path points into the old dev environment.
+version = 1
+root = "~/Projects"
+
+[repositories.product]
+path = "repos/higharc/product"
+base = "develop"
+delivery = "pr"
+
+[repositories.anvil]
+path = "repos/higharc/anvil"
+base = "main"
+delivery = "unspecified"
+
+[repositories.helm-charts]
+path = "repos/higharc/helm-charts"
+base = "main"
+delivery = "unspecified"
+
+[repositories.infra]
+path = "repos/higharc/infra"
+base = "main"
+delivery = "unspecified"
+
+[repositories.gitops]
+path = "repos/higharc/gitops"
+base = "main"
+delivery = "unspecified"
+
+[repositories.ai-services]
+path = "repos/higharc/ai-services"
+base = "develop"
+delivery = "pr"
+
+[repositories.highagent]
+path = "repos/higharc/highagent"
+base = "main"
+delivery = "unspecified"
+
+[repositories.pim-prototype]
+path = "repos/higharc/pim-prototype"
+base = "main"
+delivery = "unspecified"
+
+[repositories.demo]
+path = "repos/higharc/demo"
+base = "main"
+delivery = "unspecified"
+
+[repositories.ghreview]
+path = "repos/personal/ghreview"
+base = "main"
+delivery = "local"
+
+[repositories.procman]
+path = "repos/personal/procman"
+base = "main"
+delivery = "local"
+
+# A task may select a subset of a context's repository set. Membership makes
+# repositories available; it does not select all of them as writable worktrees.
+[contexts.kinfra]
+path = "contexts/kinfra"
+repositories = ["infra", "gitops", "ai-services"]
+
+[contexts.anvil-platform]
+path = "contexts/anvil-platform"
+repositories = ["anvil", "helm-charts"]
+
+[tasks]
+path = "tasks"
+layout = "agent-shell"
+handoff = "brief"
