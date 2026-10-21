@@ -1,0 +1,544 @@
+#!/usr/bin/env python3
+"""Independent task worktrees and Herdr spaces. Requires Python 3.11+, git, wt."""
+
+import argparse
+from datetime import datetime, timezone
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import shlex
+import subprocess
+import sys
+import time
+import tomllib
+
+
+class TaskError(Exception):
+    code = None
+
+
+def run(argv, cwd=None, env=None):
+    result = subprocess.run(argv, cwd=cwd, env=env, text=True, capture_output=True)
+    if result.returncode:
+        raise TaskError(result.stderr.strip() or result.stdout.strip() or f"Failed: {argv[0]}")
+    return result.stdout.strip()
+
+
+def git(repo, *args):
+    return run(["git", "-C", str(repo), *args])
+
+
+def safe_name(value):
+    if not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,63}", value):
+        raise TaskError(f"Invalid name {value!r}; use lowercase letters, digits, - or _ (max 64).")
+    return value
+
+
+def inside(root, value):
+    path = (root / value).resolve()
+    if path == root or not path.is_relative_to(root):
+        raise TaskError(f"Path escapes its configured root: {value}")
+    return path
+
+
+def load_registry(filename):
+    config = tomllib.loads(filename.expanduser().read_text())
+    if config.get("version") != 1:
+        raise TaskError("Unsupported project registry version.")
+    root = Path(config["root"]).expanduser().resolve()
+    for name in config.get("repositories", {}):
+        safe_name(name)
+        inside(root, config["repositories"][name]["path"])
+    for name, context in config.get("contexts", {}).items():
+        safe_name(name)
+        inside(root, context["path"])
+        if not set(context["repositories"]) <= set(config["repositories"]):
+            raise TaskError(f"Unknown repository in context {name}.")
+    inside(root, config.get("tasks", {}).get("path", "tasks"))
+    return config, root
+
+
+def assignments(values, selected, default):
+    result = {name: default(name) for name in selected}
+    seen = set()
+    for value in values:
+        qualified = "=" in value
+        if qualified:
+            name, value = value.split("=", 1)
+            if name not in selected or name in seen:
+                raise TaskError(f"Unknown or repeated repository override: {name}")
+            names = [name]
+        else:
+            names = selected
+            if "*" in seen:
+                raise TaskError("Only one unqualified override is allowed.")
+            seen.add("*")
+        for name in names:
+            if not value:
+                raise TaskError(f"Empty override for {name}.")
+            result[name] = value
+        if qualified:
+            seen.add(names[0])
+    return result
+
+
+def csv_names(value):
+    names = value.split(",") if value else []
+    if any(not name for name in names) or len(set(names)) != len(names):
+        raise TaskError("Repository lists must be comma-separated, nonempty, and unique.")
+    return names
+
+
+def task_path(config, root, project, task):
+    safe_name(project)
+    safe_name(task)
+    tasks = inside(root, config.get("tasks", {}).get("path", "tasks"))
+    return inside(tasks, f"{project}/{task}")
+
+
+def save_manifest(directory, manifest):
+    temporary = directory / ".devtask.json.tmp"
+    temporary.write_text(json.dumps(manifest, indent=2) + "\n")
+    temporary.replace(directory / ".devtask.json")
+
+
+def verify_worktrees(directory, manifest):
+    if manifest.get("status") != "ready":
+        raise TaskError(f"Task is incomplete. Inspect {directory / '.devtask.json'} before recovery.")
+    for name, repo in manifest["repositories"].items():
+        safe_name(name)
+        path = directory / name
+        if not path.is_dir() or Path(git(path, "rev-parse", "--show-toplevel")).resolve() != path:
+            raise TaskError(f"Task worktree is missing or invalid: {path}")
+        common = Path(git(path, "rev-parse", "--path-format=absolute", "--git-common-dir")).resolve()
+        expected = Path(git(repo["canonical"], "rev-parse", "--path-format=absolute", "--git-common-dir")).resolve()
+        root = Path(manifest["root"]).resolve()
+        if not expected.is_relative_to(root) or (expected / "objects/info/alternates").exists():
+            raise TaskError(f"Task Git data is no longer independent: {path}")
+        if common != expected or git(path, "branch", "--show-current") != repo["branch"]:
+            raise TaskError(f"Task worktree changed repository or branch: {path}")
+    names = list(manifest["repositories"])
+    expected_cwd = directory / names[0] if len(names) == 1 else directory
+    if Path(manifest["agent_cwd"]).resolve() != expected_cwd:
+        raise TaskError("Task agent cwd no longer matches its selected worktrees.")
+
+
+def read_manifest(directory, expected_root=None):
+    manifest = json.loads((directory / ".devtask.json").read_text())
+    if manifest.get("version") != 1 or Path(manifest["path"]).resolve() != directory:
+        raise TaskError("Task metadata is incompatible or the task directory was moved.")
+    if expected_root is not None and Path(manifest["root"]).resolve() != expected_root:
+        raise TaskError("Task metadata belongs to a different Projects root.")
+    verify_worktrees(directory, manifest)
+    return manifest
+
+
+def read_prompt(args):
+    if args.prompt_file:
+        return args.prompt_file.expanduser().read_text().strip()
+    if args.prompt_stdin:
+        return sys.stdin.read().strip()
+    return (args.prompt or "").strip()
+
+
+def write_context(directory, manifest):
+    refs = {name: {"path": str(directory / name), "description": "Writable task worktree."}
+            for name in manifest["repositories"]}
+    refs.update({name: {"path": path, "description": "Supporting repository; consult only, do not edit."}
+                 for name, path in manifest["references"].items()})
+    if manifest.get("context"):
+        refs["project-context"] = {
+            "path": manifest["context"],
+            "description": "Consult shared project docs and architecture; keep implementation in task worktrees.",
+        }
+    config = {
+        "$schema": "https://opencode.ai/config.json",
+        "default_agent": manifest["opencode_agent"],
+        "instructions": [str(directory / "AGENTS.md")],
+        "references": refs,
+        "permission": {"edit": {
+            str(Path(manifest["root"]) / "repos" / "**"): "deny",
+            str(Path(manifest["root"]) / "contexts" / "**"): "deny",
+        }},
+    }
+    if manifest.get("model"):
+        config["model"] = manifest["model"]
+    (directory / "opencode.jsonc").write_text(json.dumps(config, indent=2) + "\n")
+    lines = [f"# Task: {manifest['project']} / {manifest['task']}", "",
+             "Implement only in the selected task worktrees below. Read each worktree's",
+             "applicable AGENTS.md and contribution instructions before editing. This task",
+             "contract supplements those instructions; it does not replace them.", "",
+             "Run Git, build, and validation commands from the relevant repository root.",
+             "Consult canonical references and project docs without editing them. Do not",
+             "use checkouts or dependencies under ~/dev. Separate worktrees share history",
+             "only with their independent Projects canonical clone.", "",
+             "Repository setup, LFS assets, secrets, dependencies, and dev-server ports",
+             "must be handled per worktree. No commit, push, PR, merge, or deployment",
+             "unless requested. Report focused validation and remaining integration work.", "",
+             "| Repository | Worktree | Branch | Base | Integration target | Delivery |",
+             "| --- | --- | --- | --- | --- | --- |"]
+    for name, repo in manifest["repositories"].items():
+        lines.append(f"| {name} | {directory / name} | {repo['branch']} | {repo['base']} | {repo['target']} | {repo['delivery']} |")
+    lines += ["", "For multi-repository changes, track commits and validation separately and",
+              "explain integration/deployment order. Delivery 'unspecified' requires an",
+              "explicit choice before integration. The launcher does not merge or push.", "",
+              "The task brief is in HANDOFF.md. Read it before implementing."]
+    (directory / "AGENTS.md").write_text("\n".join(lines) + "\n")
+    (directory / "HANDOFF.md").write_text(manifest["prompt"] + "\n")
+
+
+def require_herdr():
+    if os.environ.get("HERDR_ENV") != "1":
+        raise TaskError("Run inside Herdr, or use new --no-open to create worktrees only.")
+
+
+def herdr(*args, missing=False):
+    result = subprocess.run([os.environ.get("HERDR_BIN_PATH") or "herdr", *args],
+                            text=True, capture_output=True)
+    if result.returncode == 0 and not result.stdout.strip() and not result.stderr.strip():
+        return {}  # pane run/send commands acknowledge success with no output.
+    try:
+        payload = json.loads(result.stdout or result.stderr)
+    except json.JSONDecodeError:
+        raise TaskError(result.stderr.strip() or result.stdout.strip() or "Invalid Herdr response.")
+    if result.returncode or "error" in payload:
+        error = payload.get("error", {})
+        if missing and error.get("code") in {"agent_not_found", "pane_not_found", "workspace_not_found"}:
+            return None
+        failure = TaskError(f"Herdr {error.get('code', 'error')}: {error.get('message', result.stderr.strip())}")
+        failure.code = error.get("code")
+        raise failure
+    return payload["result"]
+
+
+def agent_name(directory):
+    digest = hashlib.sha256(str(directory).encode()).hexdigest()[:10]
+    return f"dt-{directory.name[:17]}-{digest}"
+
+
+def endpoint():
+    return os.environ.get("HERDR_SOCKET_PATH") or os.environ.get("HERDR_SESSION") or "default"
+
+
+def ensure_shell(state, cwd):
+    panes = herdr("pane", "list", "--workspace", state["workspace_id"])["panes"]
+    if state.get("shell_pane") and any(p["pane_id"] == state["shell_pane"] for p in panes):
+        return
+    siblings = [p for p in panes if p["pane_id"] != state["agent_pane"]
+                and not p.get("agent") and Path(p["cwd"]).resolve() == cwd]
+    if siblings:
+        state["shell_pane"] = siblings[0]["pane_id"]
+        return
+    layout = herdr("pane", "layout", "--pane", state["agent_pane"])["layout"]
+    rect = next(p["rect"] for p in layout["panes"] if p["pane_id"] == state["agent_pane"])
+    direction = "right" if rect["width"] >= 110 and rect["width"] > rect["height"] * 1.8 else "down"
+    split = herdr("pane", "split", state["agent_pane"], "--direction", direction,
+                  "--ratio", "0.65", "--cwd", str(cwd), "--no-focus")
+    state["shell_pane"] = split["pane"]["pane_id"]
+    herdr("pane", "rename", state["shell_pane"], "shell")
+
+
+def wait_for_shell(pane):
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline:
+        info = herdr("pane", "process-info", "--pane", pane)["process_info"]
+        processes = info["foreground_processes"]
+        if len(processes) == 1 and processes[0]["pid"] == info["shell_pid"]:
+            return
+        time.sleep(0.1)
+    raise TaskError("Task agent pane is busy or its shell is not ready; free it before reopening.")
+
+
+def startup_options(manifest, args):
+    agent = args.agent or manifest["opencode_agent"]
+    model = args.model or manifest.get("model")
+    overrides = {"default_agent": agent}
+    if model:
+        overrides["model"] = model
+    help_text = run(["opencode", "--help"])
+    if "--standalone" in help_text:
+        # v2's full TUI chooses agent/model through config, not CLI flags.
+        native = ["--standalone"]
+    elif "--agent" in help_text:
+        native = ["--agent", agent]
+        if model:
+            native += ["--model", model]
+    else:
+        raise TaskError("Unsupported OpenCode TUI CLI; inspect opencode --help.")
+    return native, overrides
+
+
+def open_task(directory, args, prompt=None):
+    require_herdr()
+    # Serialize launch/reopen and prompt bookkeeping across concurrent callers.
+    with (directory / ".launch.lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        manifest = read_manifest(directory, load_registry(args.config)[1])
+        cwd = Path(manifest["agent_cwd"])
+        name = agent_name(directory)
+        launches = manifest.setdefault("launches", {})
+        state = launches.setdefault(endpoint(), {})
+        agent_result = herdr("agent", "get", name, missing=True)
+        agent = agent_result["agent"] if agent_result else None
+        if agent and Path(agent.get("foreground_cwd") or agent["cwd"]).resolve() != cwd:
+            raise TaskError(f"Agent name collision: {name}")
+        if agent:
+            state.update(workspace_id=agent["workspace_id"], agent_pane=agent["pane_id"])
+            ensure_shell(state, cwd)
+        else:
+            workspace = herdr("workspace", "get", state["workspace_id"], missing=True) if state.get("workspace_id") else None
+            if workspace:
+                panes = herdr("pane", "list", "--workspace", state["workspace_id"])["panes"]
+                available = {pane["pane_id"]: pane for pane in panes}
+                pane = available.get(state.get("agent_pane"))
+                if not pane or Path(pane["cwd"]).resolve() != cwd:
+                    workspace = None
+            if not workspace:
+                # Recover after lost/stale cached IDs by checking label and task cwd.
+                label = f"{manifest['project']} · {manifest['task']}"
+                for item in herdr("workspace", "list")["workspaces"]:
+                    if item["label"] != label:
+                        continue
+                    panes = herdr("pane", "list", "--workspace", item["workspace_id"])["panes"]
+                    matches = [p for p in panes if Path(p["cwd"]).resolve() == cwd]
+                    if matches:
+                        state.update(workspace_id=item["workspace_id"], agent_pane=matches[0]["pane_id"])
+                        workspace = item
+                        break
+                if not workspace:
+                    created = herdr("workspace", "create", "--cwd", str(cwd), "--label", label,
+                                    "--env", f"OPENCODE_CONFIG={directory / 'opencode.jsonc'}", "--no-focus")
+                    saved = {key: state[key] for key in ("session_id", "handoff") if key in state}
+                    state.clear()
+                    state.update(saved)
+                    state.update(workspace_id=created["workspace"]["workspace_id"],
+                                 agent_pane=created["root_pane"]["pane_id"])
+                    save_manifest(directory, manifest)
+                    herdr("pane", "rename", state["agent_pane"], "agent")
+            ensure_shell(state, cwd)
+            save_manifest(directory, manifest)
+            if not args.no_agent:
+                pane = herdr("pane", "get", state["agent_pane"])["pane"]
+                if pane.get("agent"):
+                    if pane["agent"] != "opencode":
+                        raise TaskError("Task agent pane is occupied by another agent.")
+                    herdr("agent", "rename", state["agent_pane"], name)
+                else:
+                    native, overrides = startup_options(manifest, args)
+                    if state.get("session_id"):
+                        native += ["--session", state["session_id"]]
+                    # Set config explicitly even for recovered panes created by a user.
+                    # New panes also receive it via workspace env for editor integration.
+                    wait_for_shell(state["agent_pane"])
+                    herdr("pane", "run", state["agent_pane"],
+                          "export OPENCODE_CONFIG=" + shlex.quote(str(directory / "opencode.jsonc"))
+                          + " OPENCODE_CONFIG_CONTENT=" + shlex.quote(json.dumps(overrides)))
+                    wait_for_shell(state["agent_pane"])
+                    deadline = time.monotonic() + 10
+                    while True:
+                        try:
+                            herdr("agent", "start", name, "--kind", "opencode", "--pane", state["agent_pane"],
+                                  "--timeout", "60000", "--", *native)
+                            break
+                        except TaskError as error:
+                            # Foreground process checks can precede the rendered
+                            # shell-prompt update after export. Busy means Herdr
+                            # has not submitted the start command, so retry only it.
+                            if error.code != "agent_pane_busy" or time.monotonic() >= deadline:
+                                raise
+                            time.sleep(0.15)
+                agent = herdr("agent", "get", name)["agent"]
+        if agent:
+            session = agent.get("agent_session", {})
+            if session.get("kind") == "id":
+                state["session_id"] = session["value"]
+            # Automatic handoff is submitted once per endpoint, not on every reopen.
+            brief = prompt if prompt is not None else (manifest["prompt"] if not state.get("handoff") else "")
+            if brief and not args.no_agent:
+                # If dispatch fails or the process is interrupted, do not replay an
+                # uncertain submission automatically. An explicit --prompt retries it.
+                state["handoff"] = "submitting"
+                save_manifest(directory, manifest)
+                try:
+                    herdr("agent", "prompt", name,
+                          f"Task environment: {directory}\nRead {directory / 'AGENTS.md'} and applicable repository instructions.\n\n{brief}")
+                except TaskError:
+                    state["handoff"] = "uncertain"
+                    save_manifest(directory, manifest)
+                    raise
+                state["handoff"] = "sent"
+                session = herdr("agent", "get", name)["agent"].get("agent_session", {})
+                if session.get("kind") == "id":
+                    state["session_id"] = session["value"]
+        save_manifest(directory, manifest)
+        if args.focus:
+            if agent:
+                herdr("agent", "focus", name)
+            else:
+                herdr("workspace", "focus", state["workspace_id"])
+        return {"project": manifest["project"], "task": manifest["task"], "path": str(directory),
+                "agent": name if agent else None, **state}
+
+
+def create_task(config, root, args):
+    if not args.no_open:
+        require_herdr()
+    directory = task_path(config, root, args.project, args.task)
+    if directory.exists():
+        raise TaskError(f"Task already exists; use devtask open {args.project} {args.task}.")
+    repos = config["repositories"]
+    context = config.get("contexts", {}).get(args.project)
+    if context:
+        selected = csv_names(args.repos)
+        if not selected:
+            raise TaskError("Context tasks require --repos; select the writable subset explicitly.")
+        members = context["repositories"]
+    elif args.project in repos:
+        selected = csv_names(args.repos) or [args.project]
+        members = [args.project]
+    else:
+        raise TaskError(f"Unknown project: {args.project}")
+    references = csv_names(args.references)
+    if not set(selected + references) <= set(members) or set(selected) & set(references):
+        raise TaskError("Selected and reference-only repos must be distinct members of the project.")
+    bases = assignments(args.base, selected, lambda n: repos[n]["base"])
+    branches = assignments(args.branch, selected, lambda n: f"task/{args.project}/{args.task}")
+    targets = assignments(args.target, selected, lambda n: repos[n]["base"])
+    deliveries = assignments(args.delivery, selected, lambda n: repos[n].get("delivery", "unspecified"))
+    plans = {}
+    # Check every repo and ref before touching any branch or creating task files.
+    for name in selected:
+        canonical = inside(root, repos[name]["path"])
+        if Path(git(canonical, "rev-parse", "--show-toplevel")).resolve() != canonical:
+            raise TaskError(f"Not a canonical repository root: {canonical}")
+        common = Path(git(canonical, "rev-parse", "--path-format=absolute", "--git-common-dir")).resolve()
+        if not common.is_relative_to(root) or (common / "objects/info/alternates").exists():
+            raise TaskError(f"Canonical Git data is not independent: {canonical}")
+        git(canonical, "check-ref-format", "--branch", branches[name])
+        existing = subprocess.run(["git", "-C", str(canonical), "show-ref", "--verify", "--quiet", "refs/heads/" + branches[name]])
+        if existing.returncode == 0:
+            raise TaskError(f"Branch already exists in {name}: {branches[name]}")
+        if repos[name].get("branch_pattern") and not re.search(repos[name]["branch_pattern"], branches[name]):
+            raise TaskError(f"{name} requires an explicit ticketed --branch; follow its start-work instructions.")
+        sha = git(canonical, "rev-parse", "--verify", "--end-of-options", bases[name] + "^{commit}")
+        git(canonical, "rev-parse", "--verify", "--end-of-options", targets[name] + "^{commit}")
+        if deliveries[name] not in {"pr", "local", "unspecified"}:
+            raise TaskError(f"Unknown delivery policy for {name}: {deliveries[name]}")
+        plans[name] = dict(canonical=str(canonical), branch=branches[name], base=bases[name],
+                           base_sha=sha, target=targets[name], delivery=deliveries[name])
+    prompt = read_prompt(args)
+    cwd = directory / selected[0] if len(selected) == 1 else directory
+    manifest = dict(version=1, project=args.project, task=args.task, path=str(directory), root=str(root),
+                    created_at=datetime.now(timezone.utc).isoformat(), status="creating", agent_cwd=str(cwd),
+                    context=str(inside(root, context["path"])) if context else None,
+                    repositories=plans, references={n: str(inside(root, repos[n]["path"])) for n in references},
+                    prompt=prompt, opencode_agent=args.agent or "build", model=args.model, launches={})
+    directory.mkdir(parents=True, exist_ok=False)
+    save_manifest(directory, manifest)
+    try:
+        for name, plan in plans.items():
+            argv = ["wt", "-C", plan["canonical"], "--config-set",
+                    "worktree-path = " + json.dumps(str(directory / name)),
+                    "switch", "--create", plan["branch"], "--base", plan["base_sha"], "--no-cd", "--format", "json"]
+            if not args.hooks:
+                argv += ["--no-hooks"]
+            run(argv, env={**os.environ, "GIT_LFS_SKIP_SMUDGE": "1"})
+            plan["created"] = True
+            save_manifest(directory, manifest)
+        write_context(directory, manifest)
+        manifest["status"] = "ready"
+        save_manifest(directory, manifest)
+    except Exception as error:
+        manifest.update(status="incomplete", error=str(error))
+        save_manifest(directory, manifest)
+        raise TaskError(f"Creation stopped; existing worktrees were retained. Inspect {directory}: {error}") from error
+    if args.no_open:
+        return manifest
+    return open_task(directory, args)
+
+
+def parser():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--config", type=Path, default=Path(os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config"))) / "devtask/projects.toml")
+    p.add_argument("--json", action="store_true", help="Print machine-readable results")
+    commands = p.add_subparsers(dest="command", required=True)
+    commands.add_parser("projects", help="List registered repositories and contexts")
+    listing = commands.add_parser("list", help="List task environments")
+    listing.add_argument("project", nargs="?")
+    path = commands.add_parser("path", help="Print a task's working directory")
+    path.add_argument("project")
+    path.add_argument("task")
+    for command in ("new", "open"):
+        sub = commands.add_parser(command, help="Create a task" if command == "new" else "Reopen a task without replaying its brief")
+        sub.add_argument("project")
+        sub.add_argument("task")
+        sub.add_argument("--focus", action="store_true", help="Switch focus to the task (default: background)")
+        sub.add_argument("--no-agent", action="store_true", help="Open the space and shell without starting OpenCode")
+        sub.add_argument("--agent", help="OpenCode primary agent (new: build; open: task default)")
+        sub.add_argument("--model", help="Explicit OpenCode provider/model")
+        prompts = sub.add_mutually_exclusive_group()
+        prompts.add_argument("--prompt")
+        prompts.add_argument("--prompt-file", type=Path)
+        prompts.add_argument("--prompt-stdin", action="store_true")
+        if command == "new":
+            sub.add_argument("--repos", help="Comma-separated writable context repositories")
+            sub.add_argument("--references", help="Comma-separated reference-only context repositories")
+            for option in ("base", "branch", "target", "delivery"):
+                sub.add_argument("--" + option, action="append", default=[], help="Value for all repos, or REPO=VALUE; repeat for per-repo choices")
+            sub.add_argument("--no-open", action="store_true", help="Create files/worktrees without Herdr")
+            sub.add_argument("--hooks", action="store_true", help="Run Worktrunk setup hooks; default skips hooks")
+    return p
+
+
+def main(argv=None):
+    args = parser().parse_args(argv)
+    try:
+        config, root = load_registry(args.config)
+        if args.command == "projects":
+            result = {"root": str(root), "repositories": config["repositories"], "contexts": config.get("contexts", {})}
+        elif args.command == "new":
+            result = create_task(config, root, args)
+        elif args.command in {"open", "path"}:
+            directory = task_path(config, root, args.project, args.task)
+            manifest = read_manifest(directory, root)
+            if args.command == "path":
+                print(manifest["agent_cwd"])
+                return 0
+            supplied = args.prompt is not None or args.prompt_file is not None or args.prompt_stdin
+            result = open_task(directory, args, read_prompt(args) if supplied else None)
+        else:
+            if args.project:
+                safe_name(args.project)
+            tasks = inside(root, config.get("tasks", {}).get("path", "tasks"))
+            result = []
+            for filename in sorted(tasks.glob("*/*/.devtask.json")):
+                item = json.loads(filename.read_text())
+                if args.project and item["project"] != args.project:
+                    continue
+                result.append({k: item[k] for k in ("project", "task", "status", "path")})
+        if args.json:
+            print(json.dumps(result, indent=2))
+        elif isinstance(result, list):
+            for item in result:
+                print(f"{item['project']}/{item['task']}  {item['status']}  {item['path']}")
+        elif args.command == "projects":
+            print(f"Root: {root}")
+            for name, repo in result["repositories"].items():
+                print(f"{name:20} {repo['base']:12} {repo.get('delivery', 'unspecified'):12} {root / repo['path']}")
+            for name, context in result["contexts"].items():
+                print(f"{name}: {', '.join(context['repositories'])}")
+        else:
+            print(f"{args.project}/{args.task}: {result['path']}")
+            if result.get("workspace_id"):
+                print(f"Herdr space: {result['workspace_id']}  agent: {result.get('agent') or 'not started'}")
+        return 0
+    except (TaskError, OSError, ValueError, KeyError) as error:
+        print(f"devtask: {error}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

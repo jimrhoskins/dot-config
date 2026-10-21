@@ -32,6 +32,7 @@ delivery = "unspecified"
 path = "repos/higharc/ai-services"
 base = "develop"
 delivery = "pr"
+branch_pattern = "(?i)(^|[/-])labsrd-[0-9]+([/-]|$)"
 
 [repositories.highagent]
 path = "repos/higharc/highagent"

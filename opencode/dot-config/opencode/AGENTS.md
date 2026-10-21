@@ -8,6 +8,9 @@ When asked to read from or write to Obsidian notes, use the standard file tools 
 
 Personal dotfiles are maintained in ~/stow using GNU Stow.
 
+## Projects and worktrees
+Repos in ~/Projects should not be modified directly, and may be fetched/pulled off the main branch of the repo. Work should be done in ~/Projects/Worktrees/<repo>-<wt-name>;
+
 Before changing personal tool configuration:
 1. Resolve the runtime path's symlink and identify its maintained source.
 2. Read ~/stow/AGENTS.md.
